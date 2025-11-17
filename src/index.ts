@@ -72,32 +72,13 @@ app.event('app_mention', async ({ event, client, say }) => {
 
 // DM 메시지 처리
 app.message(async ({ message, say }) => {
-  // 봇 자신의 메시지는 무시
+  // 봇 자신의 메시지는 무시 (무한 루프 방지)
   if (message.subtype === 'bot_message') {
     return;
   }
 
-  try {
-    const text = (message as any).text || '';
-
-    // 인사말 처리
-    if (!text || text === '안녕' || text === 'hi' || text === 'hello' || text === '도움말') {
-      const greeting = await claudeClient.getGreeting();
-      await say(greeting);
-      return;
-    }
-
-    // 로딩 메시지
-    await say('생각 중입니다... 🤔');
-
-    // Claude API를 통해 답변 생성
-    const answer = await claudeClient.answerQuestion(text);
-    await say(answer);
-
-  } catch (error) {
-    console.error('Error handling message:', error);
-    await say('죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요. 😢');
-  }
+  const answer = await claudeClient.answerQuestion((message as any).text);
+  await say(answer);
 });
 
 // 슬래시 커맨드: /handbook
