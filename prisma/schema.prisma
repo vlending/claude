@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  PROFESSIONAL
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+}
+
+enum AlertType {
+  OPENING_SOON
+  CANCELLATION
+  RECOMMENDATION
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  CANCELLED
+  MONITORING
+}
+
+model User {
+  id    String @id @default(cuid())
+  email String @unique
+  name  String
+  phone String?
+
+  // 프로필 정보
+  address   String? // 거주지
+  latitude  Float?
+  longitude Float?
+
+  // 골프 정보
+  averageScore Int?        // 평균 스코어
+  skillLevel   SkillLevel? // 실력 수준
+
+  // 선호 정보
+  preferredDays  String[] // ["MON", "SAT", "SUN"]
+  preferredTimes String[] // ["MORNING", "AFTERNOON"]
+  budgetMin      Int?
+  budgetMax      Int?
+
+  // 구독
+  subscriptionTier SubscriptionTier @default(FREE)
+  subscriptionEnd  DateTime?
+
+  // 알림 설정
+  notificationsEnabled Boolean @default(true)
+  pushToken            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  favorites   FavoriteGolfCourse[]
+  alerts      Alert[]
+  predictions BookingPrediction[]
+
+  @@index([email])
+}
+
+model GolfCourse {
+  id       String @id @default(cuid())
+  name     String
+  region   String // "경기북부", "경기남부", "인천" 등
+  city     String
+  address  String
+  latitude Float
+  longitude Float
+
+  // 코스 정보
+  holes      Int // 18, 27, 36
+  par        Int
+  difficulty Int // 1-5
+
+  // 가격 정보
+  weekdayPrice Int
+  weekendPrice Int
+
+  // 예약 정보
+  bookingUrl      String
+  bookingOpenTime String // "07:00"
+  bookingOpenDays Int    // 예약 오픈 일수 (예: 7일 전)
+
+  // 평가
+  rating      Float? @default(0)
+  reviewCount Int    @default(0)
+
+  // 시설
+  facilities String[] // ["캐디", "카트", "연습장"]
+
+  // 이미지
+  imageUrl String?
+
+  // 활성화 여부
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  availableSlots TeeTimeSlot[]
+  favorites      FavoriteGolfCourse[]
+  alerts         Alert[]
+
+  @@index([region, city])
+  @@index([latitude, longitude])
+}
+
+model TeeTimeSlot {
+  id           String     @id @default(cuid())
+  golfCourseId String
+  golfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id], onDelete: Cascade)
+
+  date   DateTime
+  time   String // "08:00"
+  price  Int
+  status SlotStatus
+
+  lastChecked DateTime @default(now())
+
+  // 취소 티타임 추적
+  wasCancelled Boolean   @default(false)
+  cancelledAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([golfCourseId, date, time])
+  @@index([golfCourseId, date, status])
+  @@index([status, lastChecked])
+}
+
+model FavoriteGolfCourse {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  golfCourseId String
+  golfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, golfCourseId])
+  @@index([userId])
+}
+
+model Alert {
+  id     String    @id @default(cuid())
+  userId String
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type   AlertType
+
+  golfCourseId String?
+  golfCourse   GolfCourse? @relation(fields: [golfCourseId], references: [id], onDelete: Cascade)
+
+  title     String
+  message   String
+  actionUrl String?
+
+  isRead Boolean  @default(false)
+  sentAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([sentAt])
+}
+
+model BookingPrediction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  targetDate DateTime
+  targetTime String
+
+  // AI 예측
+  successRate     Float  // 0.0 - 1.0
+  recommendedTime String // "07:00" (대기 시작 추천 시간)
+  alternatives    Json   // 대체 골프장 추천
+
+  factors Json // 예측 근거
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, targetDate])
+}
