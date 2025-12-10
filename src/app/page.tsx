@@ -1,16 +1,27 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="max-w-5xl w-full">
-        <h1 className="text-6xl font-bold text-center mb-8 bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
-          AI 골프 부킹 어시스턴트
-        </h1>
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 md:p-24">
+      <div className="max-w-6xl w-full">
+        <div className="text-center mb-16">
+          <Badge className="mb-4" variant="secondary">
+            합법적인 예약 도우미 서비스
+          </Badge>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+            AI 골프 부킹 어시스턴트
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8">
+            수도권 골프장 예약 성공 확률을 극적으로 올려주는 AI 기반 서비스
+          </p>
+          <Button size="lg" className="bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600">
+            무료로 시작하기
+          </Button>
+        </div>
 
-        <p className="text-xl text-center text-gray-600 mb-12">
-          수도권 골프장 예약 성공 확률을 극적으로 올려주는 AI 기반 서비스
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           <FeatureCard
             icon="🎯"
             title="개인 맞춤 추천"
@@ -43,18 +54,15 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="mt-16 text-center">
-          <button className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-green-700 hover:to-emerald-600 transition-all shadow-lg">
-            시작하기
-          </button>
-        </div>
-
-        <div className="mt-12 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
-            <strong>⚖️ 합법적인 서비스:</strong> 자동 예약이 아닌, 예약 성공을 돕는 알림 서비스입니다.
-            모든 예약은 사용자가 직접 클릭해야 합니다.
-          </p>
-        </div>
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardHeader>
+            <CardTitle className="text-yellow-900">⚖️ 합법적인 서비스</CardTitle>
+            <CardDescription className="text-yellow-800">
+              자동 예약이 아닌, 예약 성공을 돕는 알림 서비스입니다.
+              모든 예약은 사용자가 직접 클릭해야 합니다.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     </main>
   );
@@ -62,10 +70,12 @@ export default function HomePage() {
 
 function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
-    <div className="p-6 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow bg-white">
-      <div className="text-4xl mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </div>
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="text-4xl mb-2">{icon}</div>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+    </Card>
   );
 }
