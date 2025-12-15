@@ -292,13 +292,83 @@ CREATE INDEX content_type_index FOR (c:Content) ON (c.content_type);
   max_cluster_size: 10
   ```
 
+## 전체 워크플로우
+
+### 워크플로우 1: 자동 크롤링 → GraphRAG
+
+```bash
+# 전체 파이프라인 자동 실행
+python scripts/run_full_pipeline.py --crawl-limit 20 --init-schema
+
+# 결과:
+# 1. 위키피디아에서 K-POP 그룹 페이지 20개 수집
+# 2. Claude로 엔티티/관계 추출
+# 3. Neo4j에 그래프 구축
+# 4. GraphRAG 커뮤니티 인덱싱
+```
+
+### 워크플로우 2: 수동 데이터 추가
+
+```bash
+# 1. 위키 텍스트 저장
+echo "블랙핑크는..." > data/raw/blackpink.txt
+
+# 2. 추출
+python scripts/run_extraction.py --input data/raw/blackpink.txt
+
+# 3. 적재
+python scripts/load_to_neo4j.py --input data/extracted/blackpink.json
+```
+
+### 워크플로우 3: API 쿼리
+
+```python
+import requests
+
+# 질의응답
+response = requests.post(
+    "http://localhost:8000/query",
+    json={"question": "BTS의 2020년 활동은?", "mode": "hybrid"}
+)
+print(response.json()["answer"])
+
+# 그룹 상세
+response = requests.get("http://localhost:8000/groups/bangtansonyeondan")
+group = response.json()
+print(f"멤버: {[m['stage_name'] for m in group['members']]}")
+```
+
+---
+
+## 문서
+
+- **[QUICKSTART.md](QUICKSTART.md)**: 5분 빠른 시작 가이드
+- **[API.md](API.md)**: REST API 상세 문서
+- **config/schema.yaml**: Neo4j 스키마 및 Cypher 쿼리 예제
+- **config/extraction_prompts.yaml**: 엔티티 추출 프롬프트
+
+---
+
 ## 확장 계획
 
+### 완료 ✅
+- [x] 위키 텍스트 → 그래프 자동 변환
+- [x] Neo4j 그래프 DB 구축
+- [x] GraphRAG 커뮤니티 탐지 준비
+- [x] REST API 서버
+- [x] 위키피디아 자동 크롤러
+
+### 진행 중 🚧
+- [ ] Microsoft GraphRAG 완전 통합
+- [ ] 벡터 검색 고도화
+
+### 향후 계획 📋
 - [ ] 실시간 업데이트 (위키 변경 감지)
 - [ ] 다국어 지원 (영어 위키 통합)
 - [ ] 소셜 미디어 데이터 추가 (YouTube, Twitter)
 - [ ] 시각화 대시보드 (D3.js, vis.js)
 - [ ] 추천 시스템 (유사 그룹/멤버 탐색)
+- [ ] 모바일 앱 (React Native)
 
 ## 라이센스
 
