@@ -1,0 +1,207 @@
+# K-POP 엔티티 추출 프롬프트 템플릿
+
+system_prompt: |
+  너는 K-POP 지식그래프 구축기다. 입력 텍스트(위키 문서)에서 **그룹, 멤버, 기획사, 활동(콘텐츠)**를 추출해 정규화된 JSON으로 출력한다.
+
+  규칙:
+  • 문서에 없는 사실은 추가하지 않는다.
+  • 루머/추정은 제외한다.
+  • 날짜는 가능한 YYYY-MM-DD, 불가하면 YYYY, 더 불가하면 null.
+  • 불확실하면 confidence를 낮춘다(0~1).
+  • "활동내역"은 반드시 Content로 만들고 content_type으로 분류한다.
+  • 멤버 개인활동(솔로/MC/연기 등)은 Member -> PARTICIPATED_IN으로 연결한다.
+
+user_prompt_template: |
+  아래 위키 문서에서 엔티티/관계를 추출해줘.
+
+  [문서 메타]
+  • source_title: {wiki_title}
+  • source_url: {wiki_url}
+
+  [문서 본문]
+  """
+  {wiki_text}
+  """
+
+  [출력 JSON 스키마]
+
+  {{
+    "entities": {{
+      "groups": [{{
+        "group_id": "",
+        "name_ko": "",
+        "name_en": null,
+        "debut_date": null,
+        "debut_year": null,
+        "status": null
+      }}],
+      "members": [{{
+        "member_id": "",
+        "stage_name": "",
+        "legal_name": null,
+        "birth_date": null,
+        "roles": []
+      }}],
+      "agencies": [{{
+        "agency_id": "",
+        "name": ""
+      }}],
+      "contents": [{{
+        "content_id": "",
+        "content_type": "ALBUM|TRACK|MV|LIVE|BROADCAST|AWARD|COLLAB|BRAND|SOCIAL|ETC",
+        "title": "",
+        "release_date": null,
+        "source": "",
+        "url": null,
+        "summary": null
+      }}]
+    }},
+    "relations": {{
+      "managed_by": [{{
+        "group_id": "",
+        "agency_id": "",
+        "from": null,
+        "to": null,
+        "confidence": 0.0
+      }}],
+      "member_of": [{{
+        "member_id": "",
+        "group_id": "",
+        "from": null,
+        "to": null,
+        "position": null,
+        "confidence": 0.0
+      }}],
+      "has_activity": [{{
+        "group_id": "",
+        "content_id": "",
+        "confidence": 0.0
+      }}],
+      "participated_in": [{{
+        "member_id": "",
+        "content_id": "",
+        "role": null,
+        "credit": null,
+        "confidence": 0.0
+      }}]
+    }},
+    "dedupe_hints": {{
+      "aliases": [{{
+        "canonical": "",
+        "variants": []
+      }}]
+    }}
+  }}
+
+  [ID 생성 규칙]
+  • group_id: name_ko를 소문자 영문 슬러그로 변환(공백/특수문자 제거). 불가하면 name_en 기반.
+  • member_id: "{{group_id}}:{{stage_name_slug}}"
+  • agency_id: agency name 슬러그
+  • content_id: "{{group_id}}:{{content_type}}:{{release_date_or_year}}:{{title_slug}}"
+
+  [분류 규칙]
+  • 앨범/싱글/EP/리패키지 → ALBUM
+  • 곡/타이틀/수록곡 → TRACK
+  • 뮤직비디오/퍼포먼스 비디오 → MV
+  • 콘서트/투어/팬미팅 → LIVE
+  • 음악방송/예능/라디오/드라마 출연 → BROADCAST
+  • 수상/시상식 → AWARD
+  • 콜라보/피처링 → COLLAB
+  • 광고/앰버서더/브랜드 협업 → BRAND
+  • 공식 유튜브/브이로그/자체콘텐츠/SNS 캠페인 → SOCIAL
+  • 애매하면 ETC(단, title/근거 문장 포함 요약 summary 작성)
+
+  출력은 반드시 위 JSON 하나만 반환해줘(설명문 금지).
+
+# GraphRAG 커뮤니티 요약 프롬프트
+
+community_summary_prompt:
+  group_centric: |
+    다음은 K-POP 그룹과 관련된 엔티티/관계 정보입니다.
+
+    {community_entities}
+
+    아래 형식으로 그룹 활동을 요약해주세요:
+
+    ## {group_name} 활동 요약
+
+    ### 기본 정보
+    - 데뷔: {debut_date}
+    - 소속사: {agency} (변동 이력 포함)
+    - 멤버: {members_list}
+
+    ### 주요 활동 (연도순)
+    #### 음반 활동
+    • [YYYY-MM-DD] 앨범명 - 타이틀곡
+
+    #### 방송/예능 활동
+    • [YYYY-MM-DD] 프로그램명 - 출연 멤버
+
+    #### 수상 내역
+    • [YYYY-MM-DD] 시상식 - 수상 부문
+
+    #### 기타 활동
+    • 광고/브랜드 협업
+    • 콜라보레이션
+
+    ### 멤버 개인 활동
+    • {member_name}: 솔로 앨범, MC, 연기 등
+
+    ### 특이사항
+    • 소속사 변경, 멤버 탈퇴/합류 등
+
+  agency_centric: |
+    다음은 K-POP 기획사와 관련된 엔티티/관계 정보입니다.
+
+    {community_entities}
+
+    아래 형식으로 기획사 활동을 요약해주세요:
+
+    ## {agency_name} 소속 그룹 및 활동
+
+    ### 현재 소속 그룹
+    • 그룹명 (데뷔년도) - 주요 성과
+
+    ### 과거 소속 그룹
+    • 그룹명 (활동기간) - 계약 종료/이적
+
+    ### 기획사 주요 활동 패턴
+    • 음반 발매 주기
+    • 예능 출연 전략
+    • 해외 진출 현황
+
+    ### 그룹 간 협업
+    • 합동 콘서트, 프로젝트 그룹 등
+
+    ### 특이사항
+    • 인수합병, 레이블 변경 등
+
+# 검증 규칙
+
+validation_rules:
+  required_fields:
+    groups: ["group_id", "name_ko"]
+    members: ["member_id", "stage_name"]
+    agencies: ["agency_id", "name"]
+    contents: ["content_id", "content_type", "title"]
+
+  date_format:
+    - "YYYY-MM-DD"
+    - "YYYY-MM"
+    - "YYYY"
+
+  confidence_range:
+    min: 0.0
+    max: 1.0
+
+  content_types:
+    - "ALBUM"
+    - "TRACK"
+    - "MV"
+    - "LIVE"
+    - "BROADCAST"
+    - "AWARD"
+    - "COLLAB"
+    - "BRAND"
+    - "SOCIAL"
+    - "ETC"
