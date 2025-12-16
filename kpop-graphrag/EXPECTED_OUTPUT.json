@@ -1,0 +1,442 @@
+{
+  "description": "BTS 샘플 데이터 추출 예상 결과",
+  "source": "data/raw/sample_bts.txt",
+  "entities": {
+    "groups": [
+      {
+        "group_id": "bangtansonyeondan",
+        "name_ko": "방탄소년단",
+        "name_en": "BTS",
+        "debut_date": "2013-06-13",
+        "debut_year": 2013,
+        "status": "active"
+      }
+    ],
+    "members": [
+      {
+        "member_id": "bangtansonyeondan:rm",
+        "stage_name": "RM",
+        "legal_name": "김남준",
+        "birth_date": null,
+        "roles": ["리더", "메인래퍼"]
+      },
+      {
+        "member_id": "bangtansonyeondan:jin",
+        "stage_name": "진",
+        "legal_name": "김석진",
+        "birth_date": null,
+        "roles": ["보컬"]
+      },
+      {
+        "member_id": "bangtansonyeondan:suga",
+        "stage_name": "슈가",
+        "legal_name": "민윤기",
+        "birth_date": null,
+        "roles": ["래퍼"]
+      },
+      {
+        "member_id": "bangtansonyeondan:j-hope",
+        "stage_name": "제이홉",
+        "legal_name": "정호석",
+        "birth_date": null,
+        "roles": ["메인댄서", "래퍼"]
+      },
+      {
+        "member_id": "bangtansonyeondan:jimin",
+        "stage_name": "지민",
+        "legal_name": "박지민",
+        "birth_date": null,
+        "roles": ["보컬"]
+      },
+      {
+        "member_id": "bangtansonyeondan:v",
+        "stage_name": "뷔",
+        "legal_name": "김태형",
+        "birth_date": null,
+        "roles": ["보컬"]
+      },
+      {
+        "member_id": "bangtansonyeondan:jungkook",
+        "stage_name": "정국",
+        "legal_name": "전정국",
+        "birth_date": null,
+        "roles": ["메인보컬", "센터"]
+      }
+    ],
+    "agencies": [
+      {
+        "agency_id": "haibeu",
+        "name": "하이브"
+      },
+      {
+        "agency_id": "bighit-entertainment",
+        "name": "빅히트 엔터테인먼트"
+      }
+    ],
+    "contents": [
+      {
+        "content_id": "album:2013:2-cool-4-skool",
+        "content_type": "ALBUM",
+        "title": "2 Cool 4 Skool",
+        "release_date": "2013-06-13",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "데뷔 싱글 앨범, 타이틀곡 'No More Dream'"
+      },
+      {
+        "content_id": "album:2014:skool-luv-affair",
+        "content_type": "ALBUM",
+        "title": "Skool Luv Affair",
+        "release_date": "2014-02-12",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "미니 앨범"
+      },
+      {
+        "content_id": "album:2016:wings",
+        "content_type": "ALBUM",
+        "title": "WINGS",
+        "release_date": "2016-10-10",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "정규 2집, 타이틀곡 'Blood Sweat & Tears'"
+      },
+      {
+        "content_id": "album:2020:map-of-the-soul-7",
+        "content_type": "ALBUM",
+        "title": "MAP OF THE SOUL : 7",
+        "release_date": "2020-02-21",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "정규 4집, 타이틀곡 'ON'"
+      },
+      {
+        "content_id": "track:2020:dynamite",
+        "content_type": "TRACK",
+        "title": "Dynamite",
+        "release_date": "2020-08-21",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "디지털 싱글, 빌보드 핫 100 1위"
+      },
+      {
+        "content_id": "album:2020:be",
+        "content_type": "ALBUM",
+        "title": "BE",
+        "release_date": "2020-11-20",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "정규 앨범, 타이틀곡 'Life Goes On'"
+      },
+      {
+        "content_id": "track:2021:butter",
+        "content_type": "TRACK",
+        "title": "Butter",
+        "release_date": "2021-05-21",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "디지털 싱글"
+      },
+      {
+        "content_id": "broadcast:2020:nolmyeon-mwohani",
+        "content_type": "BROADCAST",
+        "title": "놀면 뭐하니?",
+        "release_date": "2020-09",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "tvN 예능 프로그램, 제이홉과 정국 출연"
+      },
+      {
+        "content_id": "broadcast:2021:bangguseok1yeol",
+        "content_type": "BROADCAST",
+        "title": "방구석1열",
+        "release_date": "2021",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "JTBC, RM 출연"
+      },
+      {
+        "content_id": "award:2017:ama",
+        "content_type": "AWARD",
+        "title": "아메리칸 뮤직 어워드",
+        "release_date": "2017-11-19",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "Favorite Social Artist 부문 수상"
+      },
+      {
+        "content_id": "award:2021:billboard-music-awards",
+        "content_type": "AWARD",
+        "title": "빌보드 뮤직 어워드",
+        "release_date": "2021-05-23",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "4개 부문 수상 (Top Duo/Group, Top Song Sales Artist, Top Social Artist, Top Selling Song)"
+      },
+      {
+        "content_id": "album:2018:mono",
+        "content_type": "ALBUM",
+        "title": "mono.",
+        "release_date": "2018",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "RM 솔로 믹스테이프"
+      },
+      {
+        "content_id": "album:2019:d-2",
+        "content_type": "ALBUM",
+        "title": "D-2",
+        "release_date": "2019",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "슈가 솔로 믹스테이프"
+      },
+      {
+        "content_id": "track:2022:the-astronaut",
+        "content_type": "TRACK",
+        "title": "The Astronaut",
+        "release_date": "2022-10",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "진 솔로 싱글"
+      },
+      {
+        "content_id": "album:2023:face",
+        "content_type": "ALBUM",
+        "title": "FACE",
+        "release_date": "2023-04",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "지민 솔로 정규 앨범"
+      },
+      {
+        "content_id": "track:2023:seven",
+        "content_type": "TRACK",
+        "title": "Seven",
+        "release_date": "2023-06",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "정국 솔로 싱글"
+      },
+      {
+        "content_id": "brand:2020:hyundai",
+        "content_type": "BRAND",
+        "title": "현대자동차 수소 캠페인",
+        "release_date": "2020",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "글로벌 수소 캠페인 'Because of You'"
+      },
+      {
+        "content_id": "brand:2021:samsung",
+        "content_type": "BRAND",
+        "title": "삼성전자 갤럭시",
+        "release_date": "2021",
+        "source": "방탄소년단",
+        "url": null,
+        "summary": "갤럭시 글로벌 앰버서더"
+      }
+    ]
+  },
+  "relations": {
+    "managed_by": [
+      {
+        "group_id": "bangtansonyeondan",
+        "agency_id": "bighit-entertainment",
+        "from": "2013-06-13",
+        "to": "2021",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "agency_id": "haibeu",
+        "from": "2021",
+        "to": null,
+        "confidence": 1.0
+      }
+    ],
+    "member_of": [
+      {
+        "member_id": "bangtansonyeondan:rm",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": "리더",
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jin",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:suga",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:j-hope",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jimin",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:v",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jungkook",
+        "group_id": "bangtansonyeondan",
+        "from": "2013-06-13",
+        "to": null,
+        "position": null,
+        "confidence": 1.0
+      }
+    ],
+    "has_activity": [
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "album:2013:2-cool-4-skool",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "album:2016:wings",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "track:2020:dynamite",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "track:2021:butter",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "award:2017:ama",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "brand:2020:hyundai",
+        "confidence": 1.0
+      },
+      {
+        "group_id": "bangtansonyeondan",
+        "content_id": "brand:2021:samsung",
+        "confidence": 1.0
+      }
+    ],
+    "participated_in": [
+      {
+        "member_id": "bangtansonyeondan:j-hope",
+        "content_id": "broadcast:2020:nolmyeon-mwohani",
+        "role": "출연",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jungkook",
+        "content_id": "broadcast:2020:nolmyeon-mwohani",
+        "role": "출연",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:rm",
+        "content_id": "broadcast:2021:bangguseok1yeol",
+        "role": "출연",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:rm",
+        "content_id": "album:2018:mono",
+        "role": "솔로",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:suga",
+        "content_id": "album:2019:d-2",
+        "role": "솔로",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jin",
+        "content_id": "track:2022:the-astronaut",
+        "role": "솔로",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jimin",
+        "content_id": "album:2023:face",
+        "role": "솔로",
+        "credit": null,
+        "confidence": 1.0
+      },
+      {
+        "member_id": "bangtansonyeondan:jungkook",
+        "content_id": "track:2023:seven",
+        "role": "솔로",
+        "credit": null,
+        "confidence": 1.0
+      }
+    ]
+  },
+  "dedupe_hints": {
+    "aliases": [
+      {
+        "canonical": "방탄소년단",
+        "variants": ["BTS", "防彈少年團"]
+      },
+      {
+        "canonical": "하이브",
+        "variants": ["빅히트 엔터테인먼트", "HYBE"]
+      }
+    ]
+  },
+  "metadata": {
+    "source_title": "방탄소년단",
+    "source_url": "https://ko.wikipedia.org/wiki/방탄소년단",
+    "model": "claude-sonnet-4-5-20250929",
+    "extraction_date": "2025-12-15"
+  },
+  "statistics": {
+    "total_entities": 28,
+    "groups": 1,
+    "members": 7,
+    "agencies": 2,
+    "contents": 18,
+    "total_relations": 33,
+    "managed_by": 2,
+    "member_of": 7,
+    "has_activity": 7,
+    "participated_in": 8
+  }
+}

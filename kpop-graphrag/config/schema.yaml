@@ -1,0 +1,328 @@
+# Neo4j 그래프 스키마 정의
+
+# 노드 타입 정의
+nodes:
+  IdolGroup:
+    labels: ["IdolGroup"]
+    properties:
+      group_id:
+        type: string
+        required: true
+        unique: true
+        description: "그룹 고유 ID (슬러그)"
+      name_ko:
+        type: string
+        required: true
+        description: "한글 그룹명"
+      name_en:
+        type: string
+        required: false
+        description: "영문 그룹명"
+      debut_date:
+        type: date
+        required: false
+        description: "데뷔일 (YYYY-MM-DD)"
+      debut_year:
+        type: integer
+        required: false
+        description: "데뷔 연도 (날짜 불명시)"
+      status:
+        type: string
+        required: false
+        enum: ["active", "hiatus", "disbanded"]
+        description: "활동 상태"
+    indexes:
+      - properties: ["group_id"]
+        type: unique
+      - properties: ["name_ko"]
+        type: text
+      - properties: ["debut_year"]
+        type: range
+
+  Member:
+    labels: ["Member"]
+    properties:
+      member_id:
+        type: string
+        required: true
+        unique: true
+        description: "멤버 고유 ID ({group_id}:{stage_name_slug})"
+      stage_name:
+        type: string
+        required: true
+        description: "활동명"
+      legal_name:
+        type: string
+        required: false
+        description: "본명"
+      birth_date:
+        type: date
+        required: false
+        description: "생년월일"
+      roles:
+        type: list[string]
+        required: false
+        description: "역할 (리더, 메인보컬, 래퍼 등)"
+    indexes:
+      - properties: ["member_id"]
+        type: unique
+      - properties: ["stage_name"]
+        type: text
+
+  Agency:
+    labels: ["Agency"]
+    properties:
+      agency_id:
+        type: string
+        required: true
+        unique: true
+        description: "기획사 고유 ID (슬러그)"
+      name:
+        type: string
+        required: true
+        description: "기획사명"
+      founded_year:
+        type: integer
+        required: false
+        description: "설립 연도"
+    indexes:
+      - properties: ["agency_id"]
+        type: unique
+      - properties: ["name"]
+        type: text
+
+  Content:
+    labels: ["Content"]
+    properties:
+      content_id:
+        type: string
+        required: true
+        unique: true
+        description: "콘텐츠 고유 ID ({group_id}:{content_type}:{date}:{title_slug})"
+      content_type:
+        type: string
+        required: true
+        enum: ["ALBUM", "TRACK", "MV", "LIVE", "BROADCAST", "AWARD", "COLLAB", "BRAND", "SOCIAL", "ETC"]
+        description: "콘텐츠 유형"
+      title:
+        type: string
+        required: true
+        description: "콘텐츠 제목"
+      release_date:
+        type: date
+        required: false
+        description: "발매/방영/공개일"
+      source:
+        type: string
+        required: false
+        description: "출처 (위키 페이지 등)"
+      url:
+        type: string
+        required: false
+        description: "관련 URL"
+      summary:
+        type: string
+        required: false
+        description: "요약/설명"
+    indexes:
+      - properties: ["content_id"]
+        type: unique
+      - properties: ["content_type"]
+        type: text
+      - properties: ["release_date"]
+        type: range
+      - properties: ["title"]
+        type: fulltext
+
+# 관계 타입 정의
+relationships:
+  MANAGED_BY:
+    description: "그룹이 기획사에 소속됨"
+    source: IdolGroup
+    target: Agency
+    properties:
+      from:
+        type: date
+        required: false
+        description: "계약 시작일"
+      to:
+        type: date
+        required: false
+        description: "계약 종료일 (null이면 현재 소속)"
+      confidence:
+        type: float
+        required: true
+        default: 1.0
+        description: "관계 확실성 (0~1)"
+    indexes:
+      - properties: ["from", "to"]
+        type: range
+
+  MEMBER_OF:
+    description: "멤버가 그룹에 소속됨"
+    source: Member
+    target: IdolGroup
+    properties:
+      from:
+        type: date
+        required: false
+        description: "합류일 (데뷔일)"
+      to:
+        type: date
+        required: false
+        description: "탈퇴일 (null이면 현재 소속)"
+      position:
+        type: string
+        required: false
+        description: "포지션 (리더, 메인보컬 등)"
+      confidence:
+        type: float
+        required: true
+        default: 1.0
+    indexes:
+      - properties: ["from", "to"]
+        type: range
+
+  HAS_ACTIVITY:
+    description: "그룹이 활동(콘텐츠)를 수행함"
+    source: IdolGroup
+    target: Content
+    properties:
+      confidence:
+        type: float
+        required: true
+        default: 1.0
+
+  PARTICIPATED_IN:
+    description: "멤버가 활동(콘텐츠)에 참여함"
+    source: Member
+    target: Content
+    properties:
+      role:
+        type: string
+        required: false
+        description: "참여 역할 (MC, 출연자, 피처링 등)"
+      credit:
+        type: string
+        required: false
+        description: "크레딧 (작사, 작곡 등)"
+      confidence:
+        type: float
+        required: true
+        default: 1.0
+
+# Cypher 쿼리 템플릿
+cypher_templates:
+  create_constraints: |
+    CREATE CONSTRAINT group_id_unique IF NOT EXISTS FOR (g:IdolGroup) REQUIRE g.group_id IS UNIQUE;
+    CREATE CONSTRAINT member_id_unique IF NOT EXISTS FOR (m:Member) REQUIRE m.member_id IS UNIQUE;
+    CREATE CONSTRAINT agency_id_unique IF NOT EXISTS FOR (a:Agency) REQUIRE a.agency_id IS UNIQUE;
+    CREATE CONSTRAINT content_id_unique IF NOT EXISTS FOR (c:Content) REQUIRE c.content_id IS UNIQUE;
+
+  create_indexes: |
+    CREATE INDEX group_name_ko_index IF NOT EXISTS FOR (g:IdolGroup) ON (g.name_ko);
+    CREATE INDEX group_debut_year_index IF NOT EXISTS FOR (g:IdolGroup) ON (g.debut_year);
+    CREATE INDEX member_stage_name_index IF NOT EXISTS FOR (m:Member) ON (m.stage_name);
+    CREATE INDEX content_type_index IF NOT EXISTS FOR (c:Content) ON (c.content_type);
+    CREATE INDEX content_release_date_index IF NOT EXISTS FOR (c:Content) ON (c.release_date);
+    CREATE FULLTEXT INDEX content_title_fulltext IF NOT EXISTS FOR (c:Content) ON EACH [c.title, c.summary];
+
+  merge_group: |
+    MERGE (g:IdolGroup {group_id: $group_id})
+    SET g.name_ko = $name_ko,
+        g.name_en = $name_en,
+        g.debut_date = date($debut_date),
+        g.debut_year = $debut_year,
+        g.status = $status
+
+  merge_member: |
+    MERGE (m:Member {member_id: $member_id})
+    SET m.stage_name = $stage_name,
+        m.legal_name = $legal_name,
+        m.birth_date = date($birth_date),
+        m.roles = $roles
+
+  merge_agency: |
+    MERGE (a:Agency {agency_id: $agency_id})
+    SET a.name = $name
+
+  merge_content: |
+    MERGE (c:Content {content_id: $content_id})
+    SET c.content_type = $content_type,
+        c.title = $title,
+        c.release_date = date($release_date),
+        c.source = $source,
+        c.url = $url,
+        c.summary = $summary
+
+  create_managed_by: |
+    MATCH (g:IdolGroup {group_id: $group_id})
+    MATCH (a:Agency {agency_id: $agency_id})
+    MERGE (g)-[r:MANAGED_BY]->(a)
+    SET r.from = date($from),
+        r.to = date($to),
+        r.confidence = $confidence
+
+  create_member_of: |
+    MATCH (m:Member {member_id: $member_id})
+    MATCH (g:IdolGroup {group_id: $group_id})
+    MERGE (m)-[r:MEMBER_OF]->(g)
+    SET r.from = date($from),
+        r.to = date($to),
+        r.position = $position,
+        r.confidence = $confidence
+
+  create_has_activity: |
+    MATCH (g:IdolGroup {group_id: $group_id})
+    MATCH (c:Content {content_id: $content_id})
+    MERGE (g)-[r:HAS_ACTIVITY]->(c)
+    SET r.confidence = $confidence
+
+  create_participated_in: |
+    MATCH (m:Member {member_id: $member_id})
+    MATCH (c:Content {content_id: $content_id})
+    MERGE (m)-[r:PARTICIPATED_IN]->(c)
+    SET r.role = $role,
+        r.credit = $credit,
+        r.confidence = $confidence
+
+# 예시 쿼리
+example_queries:
+  group_timeline:
+    description: "그룹의 전체 활동 타임라인"
+    cypher: |
+      MATCH (g:IdolGroup {group_id: $group_id})-[:HAS_ACTIVITY]->(c:Content)
+      RETURN c.title, c.release_date, c.content_type
+      ORDER BY c.release_date DESC
+
+  member_solo_activities:
+    description: "멤버의 개인 활동"
+    cypher: |
+      MATCH (m:Member {member_id: $member_id})-[:PARTICIPATED_IN]->(c:Content)
+      WHERE c.content_type IN ['BROADCAST', 'COLLAB', 'ALBUM']
+      RETURN c.title, c.content_type, c.release_date
+      ORDER BY c.release_date DESC
+
+  agency_groups:
+    description: "기획사 소속 그룹"
+    cypher: |
+      MATCH (a:Agency {agency_id: $agency_id})<-[r:MANAGED_BY]-(g:IdolGroup)
+      RETURN g.name_ko, g.debut_year, r.from, r.to
+      ORDER BY g.debut_year
+
+  content_by_type_year:
+    description: "특정 연도/유형의 콘텐츠"
+    cypher: |
+      MATCH (c:Content)
+      WHERE c.content_type = $content_type
+        AND c.release_date.year = $year
+      RETURN c.title, c.release_date
+      ORDER BY c.release_date
+
+  group_collaborations:
+    description: "그룹 간 협업"
+    cypher: |
+      MATCH (g1:IdolGroup)-[:HAS_ACTIVITY]->(c:Content {content_type: 'COLLAB'})<-[:HAS_ACTIVITY]-(g2:IdolGroup)
+      WHERE g1.group_id < g2.group_id
+      RETURN g1.name_ko, g2.name_ko, c.title, c.release_date
+      ORDER BY c.release_date DESC
