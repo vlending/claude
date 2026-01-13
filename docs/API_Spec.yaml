@@ -1,0 +1,1073 @@
+openapi: 3.0.3
+
+info:
+  title: 먹은대로 (Eat-As-You-Eat) API
+  description: |
+    Health Meal Coach MVP REST API
+
+    ## Authentication
+    All endpoints (except auth endpoints) require JWT Bearer token.
+
+    ## Rate Limiting
+    - General: 100 requests/minute
+    - Image upload: 10 requests/minute
+
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@eatasyoueat.com
+
+servers:
+  - url: https://api.eatasyoueat.com/v1
+    description: Production
+  - url: https://api-staging.eatasyoueat.com/v1
+    description: Staging
+  - url: http://localhost:8000/v1
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Authentication and user management
+  - name: Health
+    description: Health check data
+  - name: Meals
+    description: Meal logging and analysis
+  - name: Reports
+    description: Daily and weekly reports
+  - name: Gamification
+    description: Streaks, badges, and points
+  - name: Files
+    description: File upload and management
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ================================
+  # AUTH
+  # ================================
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, gender, age_group, health_goals]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                gender:
+                  type: string
+                  enum: [male, female, other]
+                age_group:
+                  type: string
+                  enum: ['20s', '30s', '40s', '50s', '60s+']
+                height_cm:
+                  type: number
+                  format: float
+                current_weight_kg:
+                  type: number
+                  format: float
+                health_goals:
+                  type: array
+                  items:
+                    type: string
+                    enum: [weight, bp, lipid, glucose, gerd]
+                medications:
+                  type: array
+                  items:
+                    type: string
+                    enum: [bp_med, statin, diabetes_med, ppi, other]
+                allergies:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already exists
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    patch:
+      tags: [Auth]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                height_cm:
+                  type: number
+                current_weight_kg:
+                  type: number
+                health_goals:
+                  type: array
+                  items:
+                    type: string
+                medications:
+                  type: array
+                  items:
+                    type: string
+                allergies:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ================================
+  # HEALTH CHECKS
+  # ================================
+  /health-checks:
+    get:
+      tags: [Health]
+      summary: List user's health checks
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of health checks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HealthCheck'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      tags: [Health]
+      summary: Create health check (manual entry)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthCheckInput'
+      responses:
+        '201':
+          description: Health check created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  /health-checks/upload:
+    post:
+      tags: [Health]
+      summary: Upload health check report (OCR)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image or PDF file
+      responses:
+        '201':
+          description: Report uploaded and parsed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '400':
+          description: Invalid file or parsing failed
+
+  /health-checks/{id}:
+    get:
+      tags: [Health]
+      summary: Get health check by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Health check details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '404':
+          description: Health check not found
+
+    patch:
+      tags: [Health]
+      summary: Update health check
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthCheckInput'
+      responses:
+        '200':
+          description: Health check updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+    delete:
+      tags: [Health]
+      summary: Delete health check
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Health check deleted
+
+  # ================================
+  # MEALS
+  # ================================
+  /meals/pre-analyze:
+    post:
+      tags: [Meals]
+      summary: Analyze meal before eating (식전 분석)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                user_text:
+                  type: string
+                  description: Optional menu description
+      responses:
+        '200':
+          description: Pre-meal analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreMealAnalysis'
+        '400':
+          description: Invalid image
+
+  /meals:
+    get:
+      tags: [Meals]
+      summary: List user's meals
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of meals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Meal'
+                  total:
+                    type: integer
+
+    post:
+      tags: [Meals]
+      summary: Log meal after eating (식후 기록)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                user_text:
+                  type: string
+                user_adjustments:
+                  type: string
+                  description: JSON string of adjustments
+                pre_analysis_id:
+                  type: string
+                  description: Link to pre-analysis if exists
+      responses:
+        '201':
+          description: Meal logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meal'
+
+  /meals/{id}:
+    get:
+      tags: [Meals]
+      summary: Get meal by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Meal details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meal'
+
+    patch:
+      tags: [Meals]
+      summary: Update meal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_text:
+                  type: string
+                user_adjustments:
+                  type: object
+      responses:
+        '200':
+          description: Meal updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meal'
+
+    delete:
+      tags: [Meals]
+      summary: Delete meal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Meal deleted
+
+  # ================================
+  # REPORTS
+  # ================================
+  /reports/daily/{date}:
+    get:
+      tags: [Reports]
+      summary: Get daily summary
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Daily summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySummary'
+
+  /reports/weekly:
+    get:
+      tags: [Reports]
+      summary: Get weekly reports
+      parameters:
+        - name: week_start
+          in: query
+          schema:
+            type: string
+            format: date
+            description: Monday of the week
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 4
+      responses:
+        '200':
+          description: List of weekly reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeeklyReport'
+
+  /reports/weekly/{week_start}:
+    get:
+      tags: [Reports]
+      summary: Get specific week report
+      parameters:
+        - name: week_start
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Weekly report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyReport'
+
+  # ================================
+  # GAMIFICATION
+  # ================================
+  /gamification:
+    get:
+      tags: [Gamification]
+      summary: Get user's gamification status
+      responses:
+        '200':
+          description: Gamification data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gamification'
+
+  /gamification/badges:
+    get:
+      tags: [Gamification]
+      summary: Get available badges
+      responses:
+        '200':
+          description: List of all badges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Badge'
+
+  # ================================
+  # FILES
+  # ================================
+  /files/upload-url:
+    post:
+      tags: [Files]
+      summary: Get pre-signed URL for direct S3 upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file_type, mime_type]
+              properties:
+                file_type:
+                  type: string
+                  enum: [health_check, meal_pre, meal_post]
+                mime_type:
+                  type: string
+      responses:
+        '200':
+          description: Pre-signed upload URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_url:
+                    type: string
+                  file_id:
+                    type: string
+                    format: uuid
+
+# ================================
+# COMPONENTS
+# ================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        gender:
+          type: string
+          enum: [male, female, other]
+        age_group:
+          type: string
+        height_cm:
+          type: number
+        current_weight_kg:
+          type: number
+        health_goals:
+          type: array
+          items:
+            type: string
+        medications:
+          type: array
+          items:
+            type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+          description: Seconds until token expiration
+        user:
+          $ref: '#/components/schemas/User'
+
+    HealthCheck:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        check_date:
+          type: string
+          format: date
+        institution:
+          type: string
+        bp_systolic:
+          type: integer
+        bp_diastolic:
+          type: integer
+        fasting_glucose:
+          type: integer
+        hba1c:
+          type: number
+        total_cholesterol:
+          type: integer
+        ldl_cholesterol:
+          type: integer
+        hdl_cholesterol:
+          type: integer
+        triglycerides:
+          type: integer
+        risk_profile:
+          type: object
+          description: Auto-computed risk levels
+        parse_confidence:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+
+    HealthCheckInput:
+      type: object
+      properties:
+        check_date:
+          type: string
+          format: date
+        institution:
+          type: string
+        bp_systolic:
+          type: integer
+        bp_diastolic:
+          type: integer
+        fasting_glucose:
+          type: integer
+        hba1c:
+          type: number
+        total_cholesterol:
+          type: integer
+        ldl_cholesterol:
+          type: integer
+        hdl_cholesterol:
+          type: integer
+        triglycerides:
+          type: integer
+        ast:
+          type: integer
+        alt:
+          type: integer
+        ggt:
+          type: integer
+        creatinine:
+          type: number
+        egfr:
+          type: number
+        uric_acid:
+          type: number
+        waist_cm:
+          type: number
+        bmi:
+          type: number
+
+    PreMealAnalysis:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [RED, YELLOW, GREEN]
+        summary:
+          type: string
+          description: One-line conclusion
+        reasons:
+          type: array
+          items:
+            type: object
+            properties:
+              reason:
+                type: string
+              metric:
+                type: string
+              value:
+                type: number
+              user_health_context:
+                type: string
+        harm_reduction_tips:
+          type: array
+          items:
+            type: string
+        alternatives:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              why:
+                type: string
+              nutrition_comparison:
+                type: string
+        daily_mission:
+          type: object
+          properties:
+            mission:
+              type: string
+            points:
+              type: integer
+        detected_foods:
+          type: array
+          items:
+            type: object
+        confidence:
+          type: number
+        clarifying_questions:
+          type: array
+          items:
+            type: object
+            properties:
+              question:
+                type: string
+              options:
+                type: array
+                items:
+                  type: string
+
+    Meal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        meal_time:
+          type: string
+          format: date-time
+        meal_type:
+          type: string
+          enum: [breakfast, lunch, dinner, snack]
+        pre_photo_url:
+          type: string
+        post_photo_url:
+          type: string
+        user_text:
+          type: string
+        detected_foods:
+          type: array
+          items:
+            type: object
+        total_kcal:
+          type: integer
+        carbs_g:
+          type: number
+        protein_g:
+          type: number
+        fat_g:
+          type: number
+        saturated_fat_g:
+          type: number
+        fiber_g:
+          type: number
+        sugar_g:
+          type: number
+        sodium_mg:
+          type: integer
+        decision:
+          type: string
+          enum: [RED, YELLOW, GREEN]
+        health_flags:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+        assumptions:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    DailySummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        total_kcal:
+          type: integer
+        total_carbs_g:
+          type: number
+        total_protein_g:
+          type: number
+        total_fat_g:
+          type: number
+        total_sodium_mg:
+          type: integer
+        total_sugar_g:
+          type: number
+        meal_count:
+          type: integer
+        red_count:
+          type: integer
+        yellow_count:
+          type: integer
+        green_count:
+          type: integer
+        weight_score:
+          type: integer
+        bp_score:
+          type: integer
+        lipid_score:
+          type: integer
+        glucose_score:
+          type: integer
+        gerd_score:
+          type: integer
+        missions_completed:
+          type: array
+          items:
+            type: string
+
+    WeeklyReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        week_start_date:
+          type: string
+          format: date
+        week_end_date:
+          type: string
+          format: date
+        avg_weight_score:
+          type: integer
+        avg_bp_score:
+          type: integer
+        avg_lipid_score:
+          type: integer
+        avg_glucose_score:
+          type: integer
+        avg_gerd_score:
+          type: integer
+        top_3_problems:
+          type: array
+          items:
+            type: object
+            properties:
+              issue:
+                type: string
+              frequency:
+                type: integer
+              impact:
+                type: string
+        top_3_wins:
+          type: array
+          items:
+            type: object
+            properties:
+              habit:
+                type: string
+              days:
+                type: integer
+        next_week_missions:
+          type: array
+          items:
+            type: object
+            properties:
+              mission:
+                type: string
+              points:
+                type: integer
+        total_meals:
+          type: integer
+        avg_kcal_per_day:
+          type: integer
+        streak_days:
+          type: integer
+        generated_at:
+          type: string
+          format: date-time
+
+    Gamification:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        current_streak:
+          type: integer
+        longest_streak:
+          type: integer
+        total_points:
+          type: integer
+        level:
+          type: integer
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
+
+    Badge:
+      type: object
+      properties:
+        badge_id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon_url:
+          type: string
+        earned_at:
+          type: string
+          format: date-time
+        is_earned:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
