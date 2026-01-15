@@ -21,7 +21,10 @@ const sessions = new Map<string, IdolChatbot>();
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) {
   console.error('❌ ANTHROPIC_API_KEY가 설정되지 않았습니다.');
-  process.exit(1);
+  // Vercel에서는 process.exit 대신 경고만 표시
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
 }
 
 /**
@@ -152,28 +155,33 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 서버 시작
-app.listen(PORT, () => {
-  console.log('╔════════════════════════════════════════════════════════╗');
-  console.log('║       🎤 아이돌 챗봇 웹 서버가 시작되었습니다! 🎤      ║');
-  console.log('╚════════════════════════════════════════════════════════╝');
-  console.log('');
-  console.log(`🌐 서버 주소: http://localhost:${PORT}`);
-  console.log(`🔗 브라우저에서 접속하세요!`);
-  console.log('');
-  console.log('📊 API 엔드포인트:');
-  console.log(`  POST   /api/session/new          - 새 세션 생성`);
-  console.log(`  POST   /api/chat                 - 메시지 전송`);
-  console.log(`  GET    /api/session/:id/memory   - 메모리 상태 조회`);
-  console.log(`  DELETE /api/session/:id          - 세션 삭제`);
-  console.log(`  GET    /api/health               - 헬스체크`);
-  console.log('');
-  console.log('💡 종료하려면 Ctrl+C를 누르세요.');
-  console.log('');
-});
+// 서버 시작 (로컬 실행 시에만)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log('╔════════════════════════════════════════════════════════╗');
+    console.log('║       🎤 아이돌 챗봇 웹 서버가 시작되었습니다! 🎤      ║');
+    console.log('╚════════════════════════════════════════════════════════╝');
+    console.log('');
+    console.log(`🌐 서버 주소: http://localhost:${PORT}`);
+    console.log(`🔗 브라우저에서 접속하세요!`);
+    console.log('');
+    console.log('📊 API 엔드포인트:');
+    console.log(`  POST   /api/session/new          - 새 세션 생성`);
+    console.log(`  POST   /api/chat                 - 메시지 전송`);
+    console.log(`  GET    /api/session/:id/memory   - 메모리 상태 조회`);
+    console.log(`  DELETE /api/session/:id          - 세션 삭제`);
+    console.log(`  GET    /api/health               - 헬스체크`);
+    console.log('');
+    console.log('💡 종료하려면 Ctrl+C를 누르세요.');
+    console.log('');
+  });
 
-// 정리 작업
-process.on('SIGINT', () => {
-  console.log('\n\n👋 서버를 종료합니다...');
-  process.exit(0);
-});
+  // 정리 작업
+  process.on('SIGINT', () => {
+    console.log('\n\n👋 서버를 종료합니다...');
+    process.exit(0);
+  });
+}
+
+// Vercel Serverless Function용 export
+export default app;
