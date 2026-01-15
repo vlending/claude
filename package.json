@@ -10,7 +10,9 @@
     "watch": "tsc -w",
     "idol": "ts-node src/idol/cli.ts",
     "idol:build": "tsc && node dist/idol/cli.js",
-    "idol:test": "ts-node src/idol/test.ts"
+    "idol:test": "ts-node src/idol/test.ts",
+    "idol:web": "ts-node src/idol/webServer.ts",
+    "idol:web:build": "tsc && node dist/idol/webServer.js"
   },
   "keywords": [
     "slack",
@@ -22,13 +24,17 @@
   "author": "Blending",
   "license": "MIT",
   "dependencies": {
-    "@slack/bolt": "^3.17.0",
     "@anthropic-ai/sdk": "^0.28.0",
-    "dotenv": "^16.4.5"
+    "@slack/bolt": "^3.17.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^20.11.0",
-    "typescript": "^5.3.3",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

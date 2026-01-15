@@ -68,13 +68,41 @@ K-POP 세계관의 가상 아이돌 연습생과 대화하며 성장을 체감�
 ANTHROPIC_API_KEY=sk-ant-your-actual-api-key-here
 ```
 
-### 2. 실행
+### 2. 실행 방법
+
+#### 🌐 웹 인터페이스 (추천)
+
+브라우저에서 바로 사용할 수 있는 웹 UI:
 
 ```bash
-# 개발 모드 (ts-node 사용, 추천)
+# 개발 모드
+npm run idol:web
+
+# 빌드 후 실행
+npm run idol:web:build
+```
+
+서버가 시작되면 브라우저에서 접속:
+```
+http://localhost:3000
+```
+
+**기능:**
+- 📱 모바일 친화적인 반응형 디자인
+- 💬 실시간 채팅 인터페이스
+- 📊 친밀도/성격/감정 상태 실시간 표시
+- 🎨 아름다운 그라데이션 UI
+- ⌨️ Enter 키로 빠른 전송
+
+#### 💻 CLI 인터페이스
+
+터미널에서 대화:
+
+```bash
+# 개발 모드
 npm run idol
 
-# 또는 빌드 후 실행
+# 빌드 후 실행
 npm run idol:build
 ```
 
@@ -155,9 +183,78 @@ npm run idol:build
 ## 🔧 기술 스택
 
 - **언어**: TypeScript
-- **AI 모델**: Claude 3.5 Sonnet (Anthropic)
-- **인터페이스**: CLI (Node.js readline)
+- **AI 모델**: Claude 4.5 Sonnet (Anthropic)
+- **백엔드**: Express.js
+- **프론트엔드**: Vanilla JavaScript (No framework)
+- **인터페이스**: 웹 UI + CLI
 - **메모리**: 인메모리 (세션 기반)
+
+## 🔌 API 엔드포인트
+
+### POST `/api/session/new`
+새 세션을 생성하고 첫 메시지를 받습니다.
+
+**Response:**
+```json
+{
+  "sessionId": "session_1234567890_abc123",
+  "firstMessage": "…안녕.\n\n여기서 누군가랑..."
+}
+```
+
+### POST `/api/chat`
+메시지를 전송하고 아이돌의 응답을 받습니다.
+
+**Request:**
+```json
+{
+  "message": "오늘 연습했어?",
+  "sessionId": "session_1234567890_abc123"
+}
+```
+
+**Response:**
+```json
+{
+  "sessionId": "session_1234567890_abc123",
+  "response": "응... 했어.\n\n근데 계속 박자를 놓쳤어...",
+  "memory": {
+    "bond_level": "low",
+    "personality": "shy",
+    "last_emotion": "anxious",
+    "interaction_count": 1
+  }
+}
+```
+
+### GET `/api/session/:sessionId/memory`
+현재 세션의 메모리 상태를 조회합니다.
+
+**Response:**
+```json
+{
+  "bond_level": "medium",
+  "personality": "balanced",
+  "last_emotion": "happy",
+  "interaction_count": 5,
+  "user_name": ""
+}
+```
+
+### DELETE `/api/session/:sessionId`
+세션을 삭제합니다.
+
+### GET `/api/health`
+서버 상태를 확인합니다.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "activeSessions": 3,
+  "timestamp": "2026-01-15T17:51:18.878Z"
+}
+```
 
 ## 📈 향후 확장 가능성
 
@@ -199,8 +296,15 @@ src/idol/
 │   └── getResponseGuideline()
 ├── idolChatbot.ts     # 챗봇 클라이언트
 │   └── IdolChatbot 클래스
-└── cli.ts             # CLI 인터페이스
-    └── IdolChatbotCLI 클래스
+├── cli.ts             # CLI 인터페이스
+│   └── IdolChatbotCLI 클래스
+├── webServer.ts       # 웹 서버 (Express)
+│   └── REST API & 세션 관리
+└── test.ts            # 자동 테스트 스크립트
+
+public/
+└── index.html         # 웹 UI (HTML/CSS/JS)
+    └── 반응형 채팅 인터페이스
 ```
 
 ## 🐛 트러블슈팅
