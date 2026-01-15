@@ -7,7 +7,10 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "idol": "ts-node src/idol/cli.ts",
+    "idol:build": "tsc && node dist/idol/cli.js",
+    "idol:test": "ts-node src/idol/test.ts"
   },
   "keywords": [
     "slack",
