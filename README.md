@@ -162,6 +162,7 @@ npm run dev
 docs/
 ├── company-handbook.md      # 사내 사규
 ├── onboarding-guide.md      # 신입사원 매뉴얼
+├── ogq-blending-karpathy-llm-wiki.md  # LLM Wiki 운영 가이드
 └── new-document.md          # 새로운 문서 추가
 ```
 
